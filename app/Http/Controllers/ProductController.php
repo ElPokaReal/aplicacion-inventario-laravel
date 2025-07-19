@@ -18,7 +18,16 @@ class ProductController extends Controller
      */
     public function index(): Response
     {
-        return response(Product::with('category', 'user', 'provider', 'imagenes')->get(), 200);
+        $products = Product::with('category', 'user', 'provider', 'imagenes')->get();
+        
+        // Ensure category_id is properly set for each product
+        $products->each(function ($product) {
+            if ($product->category) {
+                $product->category_id = $product->category->id;
+            }
+        });
+        
+        return response($products, 200);
     }
 
     /**

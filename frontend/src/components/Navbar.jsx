@@ -19,65 +19,67 @@ const Navbar = () => {
   }
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
-      <div className="container-fluid">
-        <Link className="navbar-brand" to="/">App de Inventario</Link>
-        <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-          <span className="navbar-toggler-icon"></span>
-        </button>
-        <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav me-auto mb-2 mb-lg-0">
+    <nav className="bg-gray-900 shadow-lg">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
+          <div className="flex items-center">
+            <h3 className="text-white text-xl font-bold">App de Inventario</h3>
+          </div>
+          
+          <div className="hidden md:flex items-center space-x-4">
             {user && user.roles && user.roles.some(role => role.name === 'admin') && (
               <>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/dashboard"><LayoutDashboard size={18} className="me-1" /> Panel de Control</Link>
-                </li>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/products"><Package size={18} className="me-1" /> Productos</Link>
-                </li>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/providers"><Truck size={18} className="me-1" /> Proveedores</Link>
-                </li>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/debts"><Wallet size={18} className="me-1" /> Deudas</Link>
-                </li>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/categories"><Package size={18} className="me-1" /> Categorías</Link>
-                </li>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/sales"><ShoppingCart size={18} className="me-1" /> Ventas</Link>
-                </li>
+                <Link className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center" to="/admin/dashboard">
+                  <LayoutDashboard size={18} className="mr-1" /> Panel de Control
+                </Link>
+                <Link className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center" to="/admin/products">
+                  <Package size={18} className="mr-1" /> Productos
+                </Link>
+                <Link className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center" to="/admin/providers">
+                  <Truck size={18} className="mr-1" /> Proveedores
+                </Link>
+                <Link className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center" to="/admin/debts">
+                  <Wallet size={18} className="mr-1" /> Deudas
+                </Link>
+                <Link className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center" to="/admin/categories">
+                  <Package size={18} className="mr-1" /> Categorías
+                </Link>
+                <Link className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center" to="/admin/sales">
+                  <ShoppingCart size={18} className="mr-1" /> Ventas
+                </Link>
               </>
             )}
             {user && !user.roles.some(role => role.name === 'admin') && (
-              <li className="nav-item">
-                <Link className="nav-link" to="/shop"><ShoppingCart size={18} className="me-1" /> Tienda</Link>
-              </li>
+              <Link className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center" to="/dashboard/shop">
+                <ShoppingCart size={18} className="mr-1" /> Tienda
+              </Link>
             )}
-          </ul>
-          <ul className="navbar-nav">
+          </div>
+          
+          <div className="flex items-center space-x-4">
             {user && !user.roles.some(role => role.name === 'admin') && (
-              <li className="nav-item">
-                <Link className="nav-link" to="/cart">
-                  <ShoppingCart size={18} className="me-1" /> Carrito ({getTotalItems()})
-                </Link>
-              </li>
+              <Link className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center" to="/dashboard/cart">
+                <ShoppingCart size={18} className="mr-1" /> Carrito ({getTotalItems()})
+              </Link>
             )}
             {user ? (
-              <li className="nav-item">
-                <button className="btn btn-link nav-link" onClick={handleLogout}><LogOut size={18} className="me-1" /> Cerrar Sesión ({user.name})</button>
-              </li>
+              <button 
+                className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center" 
+                onClick={handleLogout}
+              >
+                <LogOut size={18} className="mr-1" /> Cerrar Sesión ({user.name})
+              </button>
             ) : (
               <>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/login"><LogIn size={18} className="me-1" /> Iniciar Sesión</Link>
-                </li>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/register"><UserPlus size={18} className="me-1" /> Registrarse</Link>
-                </li>
+                <Link className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center" to="/login">
+                  <LogIn size={18} className="mr-1" /> Iniciar Sesión
+                </Link>
+                <Link className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center" to="/register">
+                  <UserPlus size={18} className="mr-1" /> Registrarse
+                </Link>
               </>
             )}
-          </ul>
+          </div>
         </div>
       </div>
     </nav>

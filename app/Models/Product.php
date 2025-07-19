@@ -8,6 +8,14 @@ class Product extends Model
 {
     protected $table = 'productos';
     protected $fillable = ['name', 'description', 'price', 'existencias', 'categoria_id', 'user_id', 'proveedor_id'];
+    
+    protected $casts = [
+        'categoria_id' => 'integer',
+        'user_id' => 'integer',
+        'proveedor_id' => 'integer',
+        'price' => 'decimal:2',
+        'existencias' => 'integer',
+    ];
 
     public function provider()
     {

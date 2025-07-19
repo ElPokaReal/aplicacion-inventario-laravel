@@ -10,9 +10,11 @@ import Providers from '../components/Providers';
 import Sales from '../components/Sales';
 import Debts from '../components/Debts';
 import Categories from '../components/Categories';
+import Reports from '../components/Reports';
 import ProtectedRoute from '../components/ProtectedRoute';
 import Shop from '../components/Shop';
 import Cart from '../components/Cart';
+import UserLayout from '../components/UserLayout';
 
 const AppRoutes = () => {
   return (
@@ -20,14 +22,46 @@ const AppRoutes = () => {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      <Route path="/products" element={<ProtectedRoute adminOnly={true}><Products /></ProtectedRoute>} />
-      <Route path="/providers" element={<ProtectedRoute adminOnly={true}><Providers /></ProtectedRoute>} />
-      <Route path="/sales" element={<ProtectedRoute><Sales /></ProtectedRoute>} />
-      <Route path="/debts" element={<ProtectedRoute><Debts /></ProtectedRoute>} />
-      <Route path="/categories" element={<ProtectedRoute adminOnly={true}><Categories /></ProtectedRoute>} />
-      <Route path="/shop" element={<ProtectedRoute><Shop /></ProtectedRoute>} />
-      <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+
+      {/* Rutas de Administrador */}
+      <Route 
+        path="/admin/dashboard"
+        element={<ProtectedRoute adminOnly={true}><Layout><Dashboard /></Layout></ProtectedRoute>}
+      />
+      <Route 
+        path="/admin/products"
+        element={<ProtectedRoute adminOnly={true}><Layout><Products /></Layout></ProtectedRoute>}
+      />
+      <Route 
+        path="/admin/providers"
+        element={<ProtectedRoute adminOnly={true}><Layout><Providers /></Layout></ProtectedRoute>}
+      />
+      <Route 
+        path="/admin/sales"
+        element={<ProtectedRoute adminOnly={true}><Layout><Sales /></Layout></ProtectedRoute>}
+      />
+      <Route 
+        path="/admin/debts"
+        element={<ProtectedRoute adminOnly={true}><Layout><Debts /></Layout></ProtectedRoute>}
+      />
+      <Route 
+        path="/admin/categories"
+        element={<ProtectedRoute adminOnly={true}><Layout><Categories /></Layout></ProtectedRoute>}
+      />
+      <Route 
+        path="/admin/reports"
+        element={<ProtectedRoute adminOnly={true}><Layout><Reports /></Layout></ProtectedRoute>}
+      />
+
+      {/* Rutas de Usuario */}
+      <Route 
+        path="/"
+        element={<ProtectedRoute><UserLayout /></ProtectedRoute>}
+      >
+        <Route index element={<Shop />} />
+        <Route path="shop" element={<Shop />} />
+        <Route path="cart" element={<Cart />} />
+      </Route>
     </Routes>
   );
 };

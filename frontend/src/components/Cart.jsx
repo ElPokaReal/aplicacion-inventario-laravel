@@ -32,58 +32,100 @@ const Cart = () => {
   };
 
   return (
-    <div className="container mt-4">
-      <h2 className="mb-4">Tu Carrito de Compras</h2>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <h1 className="text-4xl font-extrabold text-gray-900 mb-12 text-center">Tu Carrito de Compras</h1>
+      
       {cartItems.length === 0 ? (
-        <div className="alert alert-info">Tu carrito está vacío.</div>
+        <div className="bg-blue-50 border-2 border-blue-200 text-blue-700 px-8 py-10 rounded-xl text-center max-w-lg mx-auto">
+          <p className="text-2xl font-bold mb-3">Tu carrito está vacío.</p>
+          <button 
+            onClick={() => navigate('/shop')}
+            className="mt-4 bg-primary-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors duration-300"
+          >
+            Ir a la Tienda
+          </button>
+        </div>
       ) : (
-        <div className="row">
-          <div className="col-md-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          <div className="lg:col-span-2 space-y-6">
             {cartItems.map((item) => (
-              <div key={item.id} className="card mb-3 shadow-sm">
-                <div className="row g-0">
-                  <div className="col-md-3 d-flex align-items-center justify-content-center p-2">
-                    {item.imagenes && item.imagenes.length > 0 && (
-                      <img src={`http://localhost:8000/storage/${item.imagenes[0].ruta}`} className="img-fluid rounded-start" alt={item.name} style={{ maxHeight: '120px', objectFit: 'contain' }} />
-                    )}
-                  </div>
-                  <div className="col-md-9">
-                    <div className="card-body">
-                      <h5 className="card-title">{item.name}</h5>
-                      <p className="card-text text-muted">{item.description}</p>
-                      <div className="d-flex justify-content-between align-items-center">
-                        <div>
-                          <p className="mb-0">Precio Unitario: <strong>${item.price}</strong></p>
-                          <p className="mb-0">Subtotal: <strong>${(item.price * item.quantity).toFixed(2)}</strong></p>
-                        </div>
-                        <div className="d-flex align-items-center">
-                          <button className="btn btn-outline-secondary btn-sm" onClick={() => decreaseQuantity(item.id)} disabled={item.quantity <= 1}><Minus size={16} /></button>
-                          <span className="mx-2">{item.quantity}</span>
-                          <button className="btn btn-outline-secondary btn-sm" onClick={() => increaseQuantity(item.id)} disabled={item.quantity >= item.existencias}><Plus size={16} /></button>
-                          <button className="btn btn-danger btn-sm ms-3" onClick={() => removeFromCart(item.id)}><Trash2 size={16} /></button>
-                        </div>
-                      </div>
+              <div key={item.id} className="bg-white rounded-2xl shadow-lg p-6 flex items-center space-x-6">
+                <div className="flex-shrink-0">
+                  {item.imagenes && item.imagenes.length > 0 ? (
+                    <img 
+                      src={`http://localhost:8000/storage/${item.imagenes[0].ruta}`} 
+                      className="w-28 h-28 rounded-lg object-cover"
+                      alt={item.name} 
+                    />
+                  ) : (
+                    <div className="w-28 h-28 bg-gray-200 rounded-lg flex items-center justify-center">
+                      <span className="text-gray-400 text-sm">Sin imagen</span>
                     </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-gray-800 mb-1">{item.name}</h3>
+                  <p className="text-gray-500 text-sm mb-3">Precio: ${item.price}</p>
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center border border-gray-300 rounded-lg">
+                      <button 
+                        className="p-2 text-gray-600 hover:bg-gray-100 rounded-l-lg transition-colors disabled:opacity-50"
+                        onClick={() => decreaseQuantity(item.id)} 
+                        disabled={item.quantity <= 1}
+                      >
+                        <Minus size={16} />
+                      </button>
+                      <span className="px-4 font-semibold">{item.quantity}</span>
+                      <button 
+                        className="p-2 text-gray-600 hover:bg-gray-100 rounded-r-lg transition-colors disabled:opacity-50"
+                        onClick={() => increaseQuantity(item.id)} 
+                        disabled={item.quantity >= item.existencias}
+                      >
+                        <Plus size={16} />
+                      </button>
+                    </div>
+                    <p className="text-lg font-bold text-primary-600">${(item.price * item.quantity).toFixed(2)}</p>
                   </div>
                 </div>
+                <button 
+                  className="text-red-500 hover:text-red-700 transition-colors"
+                  onClick={() => removeFromCart(item.id)}
+                >
+                  <Trash2 size={20} />
+                </button>
               </div>
             ))}
           </div>
-          <div className="col-md-4">
-            <div className="card shadow-sm">
-              <div className="card-body">
-                <h4 className="card-title">Resumen de la Compra</h4>
-                <hr />
-                <div className="d-flex justify-content-between mb-3">
-                  <h5>Total de Artículos:</h5>
-                  <h5>{cartItems.reduce((acc, item) => acc + item.quantity, 0)}</h5>
+          
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-2xl shadow-lg p-8 sticky top-28">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Resumen</h2>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center text-gray-600">
+                  <span>Subtotal</span>
+                  <span className="font-semibold">${getTotalPrice().toFixed(2)}</span>
                 </div>
-                <div className="d-flex justify-content-between mb-4">
-                  <h3>Total a Pagar:</h3>
-                  <h3>${getTotalPrice().toFixed(2)}</h3>
+                <div className="flex justify-between items-center text-gray-600">
+                  <span>Envío</span>
+                  <span className="font-semibold">Gratis</span>
                 </div>
-                <button className="btn btn-success w-100" onClick={handleCheckout}>Completar Compra</button>
-                <button className="btn btn-outline-danger w-100 mt-2" onClick={handleClearCart}>Vaciar Carrito</button>
+                <div className="border-t border-gray-200 my-4"></div>
+                <div className="flex justify-between items-center text-xl font-bold text-gray-900">
+                  <span>Total</span>
+                  <span>${getTotalPrice().toFixed(2)}</span>
+                </div>
+                <button 
+                  className="w-full mt-6 bg-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-700 transition-colors duration-300"
+                  onClick={handleCheckout}
+                >
+                  Finalizar Compra
+                </button>
+                <button 
+                  className="w-full mt-2 bg-red-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-red-700 transition-colors duration-300"
+                  onClick={handleClearCart}
+                >
+                  Vaciar Carrito
+                </button>
               </div>
             </div>
           </div>

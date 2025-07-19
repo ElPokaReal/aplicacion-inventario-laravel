@@ -1,58 +1,65 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+
+const data = [
+  { name: 'Ene', ventas: 4000, deudas: 2400 },
+  { name: 'Feb', ventas: 3000, deudas: 1398 },
+  { name: 'Mar', ventas: 2000, deudas: 9800 },
+  { name: 'Abr', ventas: 2780, deudas: 3908 },
+  { name: 'May', ventas: 1890, deudas: 4800 },
+  { name: 'Jun', ventas: 2390, deudas: 3800 },
+  { name: 'Jul', ventas: 3490, deudas: 4300 },
+];
 
 const Dashboard = () => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <div>Cargando panel de control...</div>;
-  }
-
-  if (!user) {
-    return <div>Por favor, inicia sesión para ver el panel de control.</div>;
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
   }
 
   return (
-    <div className="container mt-4">
-      <h2>¡Bienvenido, {user.name}!</h2>
-      {user.roles && user.roles.some(role => role.name === 'admin') ? (
-        <p>Tienes privilegios de administrador. Puedes gestionar productos, proveedores, categorías, usuarios, ventas y deudas.</p>
-      ) : (
-        <p>Has iniciado sesión como usuario normal. Puedes ver tus ventas y tus deudas.</p>
-      )}
-      <p>Este es tu panel de control. Más funcionalidades serán añadidas aquí.</p>
+    <div className="container mx-auto px-6 py-8">
+      <h1 className="text-4xl font-bold text-gray-800 mb-4">¡Bienvenido, {user?.name}!</h1>
+      <p className="text-lg text-gray-600 mb-8">Aquí tienes un resumen de la actividad de tu tienda.</p>
 
-      {user.roles && user.roles.some(role => role.name === 'admin') && (
-        <div className="row mt-4">
-          <div className="col-md-4 mb-4">
-            <div className="card text-white bg-primary mb-3">
-              <div className="card-header">Total de Productos</div>
-              <div className="card-body">
-                <h5 className="card-title">150</h5>
-                <p className="card-text">Actualmente en stock.</p>
-              </div>
-            </div>
-          </div>
-          <div className="col-md-4 mb-4">
-            <div className="card text-white bg-success mb-3">
-              <div className="card-header">Ventas Totales (Hoy)</div>
-              <div className="card-body">
-                <h5 className="card-title">$1,200.00</h5>
-                <p className="card-text">Ingresos generados hoy.</p>
-              </div>
-            </div>
-          </div>
-          <div className="col-md-4 mb-4">
-            <div className="card text-white bg-warning mb-3">
-              <div className="card-header">Deudas Pendientes</div>
-              <div className="card-body">
-                <h5 className="card-title">$500.00</h5>
-                <p className="card-text">Total de deudas pendientes.</p>
-              </div>
-            </div>
-          </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">Total de Productos</h3>
+          <p className="text-4xl font-bold text-gray-900">150</p>
+          <p className="text-gray-500 text-sm">Actualmente en stock</p>
         </div>
-      )}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">Ventas Totales (Hoy)</h3>
+          <p className="text-4xl font-bold text-green-600">$1,200.00</p>
+          <p className="text-gray-500 text-sm">Ingresos generados hoy</p>
+        </div>
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h3 className="text-lg font-semibold text-gray-700 mb-2">Deudas Pendientes</h3>
+          <p className="text-4xl font-bold text-red-600">$500.00</p>
+          <p className="text-gray-500 text-sm">Total de deudas por cobrar</p>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h3 className="text-xl font-semibold text-gray-800 mb-4">Resumen de Ventas y Deudas</h3>
+        <ResponsiveContainer width="100%" height={400}>
+          <BarChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="ventas" fill="#3b82f6" name="Ventas" />
+            <Bar dataKey="deudas" fill="#ef4444" name="Deudas" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 };

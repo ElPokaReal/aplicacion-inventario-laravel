@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axios';
-import { Button, Modal, Form } from 'react-bootstrap';
-import { PlusCircle, Edit, Trash2, Save } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Save, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Categories = () => {
@@ -66,51 +65,112 @@ const Categories = () => {
   };
 
   return (
-    <div className="container mt-4">
-      <h2>Categorías</h2>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Categorías</h1>
+        <button 
+          className="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200 flex items-center"
+          onClick={() => handleShowModal()}
+        >
+          <PlusCircle className="mr-2" size={18} /> Agregar Nueva Categoría
+        </button>
+      </div>
 
-      <Button variant="primary" className="mb-3" onClick={() => handleShowModal()}>
-        <PlusCircle className="me-2" size={18} /> Agregar Nueva Categoría
-      </Button>
+      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {categories.map((category) => (
+                <tr key={category.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{category.id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{category.nombre}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex space-x-2">
+                      <button 
+                        className="text-yellow-600 hover:text-yellow-900 p-1 rounded transition-colors duration-200" 
+                        onClick={() => handleShowModal(category)}
+                      >
+                        <Edit size={16} />
+                      </button>
+                      <button 
+                        className="text-red-600 hover:text-red-900 p-1 rounded transition-colors duration-200" 
+                        onClick={() => handleDelete(category.id)}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-      <table className="table table-striped">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {categories.map((category) => (
-            <tr key={category.id}>
-              <td>{category.id}</td>
-              <td>{category.nombre}</td>
-              <td>
-                <button className="btn btn-warning btn-sm me-2" onClick={() => handleShowModal(category)}><Edit size={16} /></button>
-                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(category.id)}><Trash2 size={16} /></button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <Modal show={showModal} onHide={handleCloseModal} centered>
-        <Modal.Header closeButton>
-          <Modal.Title>{selectedCategory ? 'Editar Categoría' : 'Agregar Nueva Categoría'}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3">
-              <Form.Label>Nombre</Form.Label>
-              <Form.Control type="text" value={categoryName} onChange={(e) => setCategoryName(e.target.value)} required placeholder="Nombre de la categoría" />
-            </Form.Group>
-            <Button variant="primary" type="submit">
-              {selectedCategory ? <><Save size={18} className="me-2" /> Actualizar</> : <><PlusCircle size={18} className="me-2" /> Agregar</>}
-            </Button>
-          </Form>
-        </Modal.Body>
-      </Modal>
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                {selectedCategory ? 'Editar Categoría' : 'Agregar Nueva Categoría'}
+              </h3>
+              <button
+                onClick={handleCloseModal}
+                className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label htmlFor="categoryName" className="block text-sm font-medium text-gray-700 mb-2">
+                  Nombre
+                </label>
+                <input
+                  type="text"
+                  id="categoryName"
+                  value={categoryName}
+                  onChange={(e) => setCategoryName(e.target.value)}
+                  required
+                  placeholder="Nombre de la categoría"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                />
+              </div>
+              <div className="flex justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors duration-200"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors duration-200 flex items-center"
+                >
+                  {selectedCategory ? (
+                    <>
+                      <Save size={16} className="mr-2" /> Actualizar
+                    </>
+                  ) : (
+                    <>
+                      <PlusCircle size={16} className="mr-2" /> Agregar
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
