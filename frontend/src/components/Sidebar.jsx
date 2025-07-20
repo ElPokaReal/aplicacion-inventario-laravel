@@ -19,7 +19,7 @@ const Sidebar = () => {
   return (
     <div className="flex flex-col h-full w-64 bg-gray-900 text-white">
       <div className="flex items-center justify-center h-20 border-b border-gray-800">
-        <h1 className="text-2xl font-bold">Mi Tienda</h1>
+        <h1 className="text-2xl font-bold">Comercializadora Mi Ángel</h1>
       </div>
       <nav className="flex-grow mt-5">
         <Link
