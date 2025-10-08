@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import api from '../../api/axios';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 import { LogIn, Mail, Key } from 'lucide-react';
@@ -84,6 +84,17 @@ const Login = () => {
                 />
               </div>
             </div>
+            <div className="flex items-center justify-between">
+              <div className="text-sm">
+                <Link
+                  to="/forgot-password"
+                  className="font-medium text-primary-600 hover:text-primary-500"
+                >
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </div>
+            </div>
+
             <div>
               <button
                 type="submit"
@@ -91,6 +102,18 @@ const Login = () => {
               >
                 Iniciar Sesión
               </button>
+            </div>
+
+            <div className="text-center">
+              <span className="text-sm text-gray-600">
+                ¿No tienes una cuenta?{' '}
+                <Link
+                  to="/register"
+                  className="font-medium text-primary-600 hover:text-primary-500"
+                >
+                  Regístrate aquí
+                </Link>
+              </span>
             </div>
           </form>
         </div>

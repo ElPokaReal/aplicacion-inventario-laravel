@@ -12,14 +12,20 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Configurar middleware para API sin CSRF
         $middleware->api(prepend: [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-            \Illuminate\Session\Middleware\StartSession::class,
         ]);
 
+        // Alias de middleware
         $middleware->alias([
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        ]);
+
+        // Excluir TODAS las rutas API del CSRF
+        $middleware->validateCsrfTokens(except: [
+            'api/*',
         ]);
 
         //

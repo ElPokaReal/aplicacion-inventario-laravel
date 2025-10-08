@@ -4,7 +4,10 @@ import Home from '../components/Home';
 import Layout from '../components/Layout';
 import Login from '../components/Auth/Login';
 import Register from '../components/Auth/Register';
+import ForgotPassword from '../components/Auth/ForgotPassword';
+import ResetPassword from '../components/Auth/ResetPassword';
 import Dashboard from '../components/Dashboard';
+import DashboardRedirect from '../components/DashboardRedirect';
 import Products from '../components/Products';
 import Providers from '../components/Providers';
 import Sales from '../components/Sales';
@@ -22,6 +25,14 @@ const AppRoutes = () => {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+
+      {/* Ruta dashboard genérica que redirije según el rol */}
+      <Route 
+        path="/dashboard"
+        element={<ProtectedRoute><DashboardRedirect /></ProtectedRoute>}
+      />
 
       {/* Rutas de Administrador */}
       <Route 
