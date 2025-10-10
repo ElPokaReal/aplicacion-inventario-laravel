@@ -14,8 +14,13 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Redirigir al login si no está autenticado
-      window.location.href = '/login';
+      // Solo redirigir al login si no estamos ya en una página de autenticación
+      const currentPath = window.location.pathname;
+      const authPaths = ['/login', '/register', '/forgot-password', '/reset-password'];
+      
+      if (!authPaths.some(path => currentPath.startsWith(path))) {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

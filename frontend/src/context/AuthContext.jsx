@@ -9,6 +9,15 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const fetchUser = async () => {
+      // No intentar obtener el usuario si estamos en páginas de autenticación
+      const currentPath = window.location.pathname;
+      const authPaths = ['/login', '/register', '/forgot-password', '/reset-password'];
+      
+      if (authPaths.some(path => currentPath.startsWith(path))) {
+        setLoading(false);
+        return;
+      }
+
       try {
         const response = await api.get('/user');
         setUser(response.data);
