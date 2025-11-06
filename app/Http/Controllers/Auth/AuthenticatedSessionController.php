@@ -20,7 +20,15 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return response()->json(['user' => $request->user()->load('roles')]);
+        $user = $request->user()->load('roles');
+        
+        // Crear un token de API para Electron/SPA
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'user' => $user,
+            'token' => $token
+        ]);
     }
 
     /**

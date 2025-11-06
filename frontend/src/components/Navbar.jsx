@@ -1,12 +1,14 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from "../context/AuthContext";
-import { useCart } from "../context/CartContext"; // Import useCart
-import { Home, LayoutDashboard, Package, Truck, ShoppingCart, Wallet, LogIn, UserPlus, LogOut, Menu } from 'lucide-react';
+import { useCart } from "../context/CartContext";
+import { useTheme } from "../context/ThemeContext";
+import { Home, LayoutDashboard, Package, Truck, ShoppingCart, Wallet, LogIn, UserPlus, LogOut, Menu, Moon, Sun } from 'lucide-react';
 
 const Navbar = () => {
   const { user, logout, loading } = useAuth();
-  const { getTotalItems } = useCart(); // Use getTotalItems from CartContext
+  const { getTotalItems } = useCart();
+  const { theme, toggleTheme, companySettings } = useTheme();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -19,11 +21,18 @@ const Navbar = () => {
   }
 
   return (
-    <nav className="bg-gray-900 shadow-lg">
+    <nav className="bg-gray-900 dark:bg-gray-950 shadow-lg transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <h3 className="text-white text-xl font-bold">App de Inventario</h3>
+          <div className="flex items-center space-x-3">
+            <img 
+              src={companySettings.logo} 
+              alt={companySettings.name}
+              className="h-10 w-10 object-contain"
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
+            />
           </div>
           
           <div className="hidden md:flex items-center space-x-4">
@@ -57,6 +66,13 @@ const Navbar = () => {
           </div>
           
           <div className="flex items-center space-x-4">
+            <button
+              onClick={toggleTheme}
+              className="text-gray-300 hover:text-white p-2 rounded-md transition-colors duration-200"
+              title={theme === 'light' ? 'Modo Oscuro' : 'Modo Claro'}
+            >
+              {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
+            </button>
             {user && !user.roles.some(role => role.name === 'admin') && (
               <Link className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center" to="/dashboard/cart">
                 <ShoppingCart size={18} className="mr-1" /> Carrito ({getTotalItems()})

@@ -71,7 +71,7 @@ class ReportController extends Controller
             ->map(function ($debt) {
                 return [
                     $debt->id,
-                    $debt->user ? $debt->user->name : 'Sin usuario',
+                    $debt->user ? $debt->user->name : 'Sin empleado',
                     $debt->monto,
                     $debt->description,
                     $debt->pagada ? 'Pagada' : 'Pendiente',
@@ -82,7 +82,7 @@ class ReportController extends Controller
         $xlsx = new SimpleXLSXGen();
         
         // Agregar headers
-        $headers = ['ID', 'Usuario', 'Monto', 'Descripción', 'Estado', 'Fecha Creación'];
+        $headers = ['ID', 'Empleado', 'Monto', 'Descripción', 'Estado', 'Fecha Creación'];
         $data = array_merge([$headers], $debts->toArray());
         
         $xlsx->addSheet($data, 'Deudas');
@@ -102,7 +102,7 @@ class ReportController extends Controller
             ->map(function ($sale) {
                 return [
                     $sale->id,
-                    $sale->user ? $sale->user->name : 'Sin usuario',
+                    $sale->user ? $sale->user->name : 'Sin empleado',
                     $sale->total_venta,
                     $sale->created_at->format('d/m/Y H:i'),
                 ];
@@ -111,7 +111,7 @@ class ReportController extends Controller
         $xlsx = new SimpleXLSXGen();
         
         // Agregar headers
-        $headers = ['ID', 'Usuario', 'Total Venta', 'Fecha Venta'];
+        $headers = ['ID', 'Empleado', 'Total Venta', 'Fecha Venta'];
         $data = array_merge([$headers], $sales->toArray());
         
         $xlsx->addSheet($data, 'Ventas');
@@ -154,7 +154,7 @@ class ReportController extends Controller
             ->map(function ($debt) {
                 return [
                     $debt->id,
-                    $debt->user ? $debt->user->name : 'Sin usuario',
+                    $debt->user ? $debt->user->name : 'Sin empleado',
                     $debt->monto,
                     $debt->description,
                     $debt->pagada ? 'Pagada' : 'Pendiente',
@@ -162,7 +162,7 @@ class ReportController extends Controller
                 ];
             });
 
-        $headers = ['ID', 'Usuario', 'Monto', 'Descripción', 'Estado', 'Fecha Creación'];
+        $headers = ['ID', 'Empleado', 'Monto', 'Descripción', 'Estado', 'Fecha Creación'];
         $data = array_merge([$headers], $debts->toArray());
         $xlsx->addSheet($data, 'Deudas');
 
@@ -172,13 +172,13 @@ class ReportController extends Controller
             ->map(function ($sale) {
                 return [
                     $sale->id,
-                    $sale->user ? $sale->user->name : 'Sin usuario',
+                    $sale->user ? $sale->user->name : 'Sin empleado',
                     $sale->total_venta,
                     $sale->created_at->format('d/m/Y H:i'),
                 ];
             });
 
-        $headers = ['ID', 'Usuario', 'Total Venta', 'Fecha Venta'];
+        $headers = ['ID', 'Empleado', 'Total Venta', 'Fecha Venta'];
         $data = array_merge([$headers], $sales->toArray());
         $xlsx->addSheet($data, 'Ventas');
 
@@ -220,7 +220,7 @@ class ReportController extends Controller
             ['Total Deudas', Debt::count()],
             ['Total Categorías', Categoria::count()],
             ['Total Proveedores', Provider::count()],
-            ['Total Usuarios', User::count()],
+            ['Total Empleados', User::count()],
             ['Stock Total', Product::sum('existencias')],
             ['Monto Total Deudas', Debt::sum('monto')],
             ['Monto Total Ventas', Sale::sum('total_venta')],

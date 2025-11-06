@@ -1,0 +1,6 @@
+electron/
+scripts/
+dist/
+release/
+node_modules/
+*.config.js

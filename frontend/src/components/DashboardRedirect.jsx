@@ -3,20 +3,24 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const DashboardRedirect = () => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (user) {
-      const isAdmin = user.roles && user.roles.some(role => role.name === 'admin');
+      console.log('DashboardRedirect - Usuario:', user);
+      console.log('DashboardRedirect - Roles:', user.roles);
+      console.log('DashboardRedirect - Es Admin:', isAdmin());
       
-      if (isAdmin) {
+      if (isAdmin()) {
+        console.log('Redirigiendo a /admin/dashboard');
         navigate('/admin/dashboard', { replace: true });
       } else {
+        console.log('Redirigiendo a /shop');
         navigate('/shop', { replace: true });
       }
     }
-  }, [user, navigate]);
+  }, [user, navigate, isAdmin]);
 
   return (
     <div className="min-h-screen flex items-center justify-center">

@@ -49,7 +49,7 @@ const Cart = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           <div className="lg:col-span-2 space-y-6">
             {cartItems.map((item) => (
-              <div key={item.id} className="bg-white rounded-2xl shadow-lg p-6 flex items-center space-x-6">
+              <div key={item.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 flex items-center space-x-6 transition-colors duration-200">
                 <div className="flex-shrink-0">
                   {item.imagenes && item.imagenes.length > 0 ? (
                     <img 
@@ -98,7 +98,7 @@ const Cart = () => {
           </div>
           
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-lg p-8 sticky top-28">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 sticky top-28 transition-colors duration-200">
               <h2 className="text-2xl font-bold text-gray-900 mb-6">Resumen</h2>
               <div className="space-y-4">
                 <div className="flex justify-between items-center text-gray-600">

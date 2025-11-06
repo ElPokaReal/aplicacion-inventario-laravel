@@ -26,7 +26,7 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
-            'role' => ['sometimes', 'string', 'in:admin,user'], // Nuevo campo de validación
+            'role' => ['sometimes', 'string', 'in:admin,empleado'], // Validación actualizada
         ]);
 
         $user = User::create([
@@ -36,7 +36,7 @@ class RegisteredUserController extends Controller
         ]);
 
         // Asignar rol
-        $roleName = $request->input('role', 'user'); // Por defecto, 'user'
+        $roleName = $request->input('role', 'empleado'); // Por defecto, 'empleado'
         $role = Role::where('name', $roleName)->first();
 
         if ($role) {
@@ -47,9 +47,13 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
+        // Crear un token de API para Electron/SPA
+        $token = $user->createToken('auth_token')->plainTextToken;
+
         return response()->json([
             'user' => $user->load('roles'),
-            'message' => 'Usuario registrado exitosamente'
+            'token' => $token,
+            'message' => 'Empleado registrado exitosamente'
         ], 201);
     }
 }

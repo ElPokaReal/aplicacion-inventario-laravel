@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import DebtFormModal from './DebtFormModal';
+import DataTable from './DataTable';
 import { PlusCircle, Edit, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -44,6 +45,9 @@ const Debts = () => {
   };
 
   const handleDelete = async (id) => {
+    if (!window.confirm('¿Estás seguro de que deseas eliminar esta deuda?')) {
+      return;
+    }
     try {
       await api.delete(`/debts/${id}`);
       fetchDebts();
@@ -54,10 +58,85 @@ const Debts = () => {
     }
   };
 
+  const columns = useMemo(
+    () => [
+      {
+        accessorKey: 'id',
+        header: 'ID',
+        size: 60,
+      },
+      {
+        accessorKey: 'user.name',
+        header: 'Empleado',
+        cell: ({ row }) => (
+          <span className="font-medium text-gray-900 dark:text-gray-100">
+            {row.original.user ? row.original.user.name : 'N/A'}
+          </span>
+        ),
+      },
+      {
+        accessorKey: 'monto',
+        header: 'Monto',
+        cell: ({ row }) => (
+          <span className="font-bold text-red-600 dark:text-red-400">
+            ${row.original.monto}
+          </span>
+        ),
+      },
+      {
+        accessorKey: 'description',
+        header: 'Descripción',
+        cell: ({ row }) => (
+          <span className="text-gray-500 dark:text-gray-400 max-w-xs truncate block">
+            {row.original.description}
+          </span>
+        ),
+      },
+      {
+        accessorKey: 'pagada',
+        header: 'Pagada',
+        cell: ({ row }) => (
+          <span
+            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+              row.original.pagada
+                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+            }`}
+          >
+            {row.original.pagada ? 'Sí' : 'No'}
+          </span>
+        ),
+      },
+      {
+        id: 'actions',
+        header: 'Acciones',
+        enableSorting: false,
+        cell: ({ row }) =>
+          isAdmin ? (
+            <div className="flex space-x-2">
+              <button
+                className="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300 p-1 rounded transition-colors duration-200"
+                onClick={() => handleShowModal(row.original)}
+              >
+                <Edit size={16} />
+              </button>
+              <button
+                className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1 rounded transition-colors duration-200"
+                onClick={() => handleDelete(row.original.id)}
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+          ) : null,
+      },
+    ],
+    [isAdmin]
+  );
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Deudas</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Deudas</h1>
         {isAdmin && (
           <button 
             className="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 transition-colors duration-200 flex items-center"
@@ -68,59 +147,11 @@ const Debts = () => {
         )}
       </div>
 
-      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuario</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Monto</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pagada</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {debts.map((debt) => (
-                <tr key={debt.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{debt.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{debt.user ? debt.user.name : 'N/A'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-red-600">${debt.monto}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">{debt.description}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      debt.pagada 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {debt.pagada ? 'Sí' : 'No'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    {isAdmin && (
-                      <div className="flex space-x-2">
-                        <button 
-                          className="text-yellow-600 hover:text-yellow-900 p-1 rounded transition-colors duration-200" 
-                          onClick={() => handleShowModal(debt)}
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button 
-                          className="text-red-600 hover:text-red-900 p-1 rounded transition-colors duration-200" 
-                          onClick={() => handleDelete(debt.id)}
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <DataTable 
+        data={debts} 
+        columns={columns} 
+        searchPlaceholder="Buscar deudas por empleado, descripción..."
+      />
 
       <DebtFormModal
         show={showModal}
