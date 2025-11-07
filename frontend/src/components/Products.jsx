@@ -121,11 +121,14 @@ const Products = () => {
       {
         accessorKey: 'category.nombre',
         header: 'Categoría',
-        cell: ({ row }) => (
-          <span className="text-gray-500 dark:text-gray-400">
-            {row.original.category ? row.original.category.nombre : 'N/A'}
-          </span>
-        ),
+        cell: ({ row }) => {
+          const hasCategory = row.original.category && row.original.category.nombre !== 'No Disponible';
+          return (
+            <span className={hasCategory ? 'text-gray-500 dark:text-gray-400' : 'text-red-500 dark:text-red-400 italic font-medium'}>
+              {hasCategory ? row.original.category.nombre : 'No Disponible'}
+            </span>
+          );
+        },
       },
       {
         accessorKey: 'user.name',
@@ -139,11 +142,14 @@ const Products = () => {
       {
         accessorKey: 'provider.name',
         header: 'Proveedor',
-        cell: ({ row }) => (
-          <span className="text-gray-500 dark:text-gray-400">
-            {row.original.provider ? row.original.provider.name : 'N/A'}
-          </span>
-        ),
+        cell: ({ row }) => {
+          const hasProvider = row.original.provider && row.original.provider.name !== 'No Disponible';
+          return (
+            <span className={hasProvider ? 'text-gray-500 dark:text-gray-400' : 'text-red-500 dark:text-red-400 italic font-medium'}>
+              {hasProvider ? row.original.provider.name : 'No Disponible'}
+            </span>
+          );
+        },
       },
       {
         id: 'actions',

@@ -84,8 +84,8 @@ class ProductController extends Controller
             'description' => 'nullable|string',
             'price' => 'sometimes|required|numeric|min:0',
             'existencias' => 'sometimes|required|integer|min:0',
-            'categoria_id' => 'sometimes|required|exists:categorias,id',
-            'proveedor_id' => 'sometimes|required|exists:proveedores,id',
+            'categoria_id' => 'nullable|exists:categorias,id',
+            'proveedor_id' => 'nullable|exists:proveedores,id',
             'imagenes.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 

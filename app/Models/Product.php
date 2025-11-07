@@ -19,12 +19,18 @@ class Product extends Model
 
     public function provider()
     {
-        return $this->belongsTo(Provider::class, 'proveedor_id');
+        return $this->belongsTo(Provider::class, 'proveedor_id')->withDefault([
+            'name' => 'No Disponible',
+            'id' => null
+        ]);
     }
 
     public function category()
     {
-        return $this->belongsTo(Categoria::class, 'categoria_id');
+        return $this->belongsTo(Categoria::class, 'categoria_id')->withDefault([
+            'nombre' => 'No Disponible',
+            'id' => null
+        ]);
     }
 
     public function user()

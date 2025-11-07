@@ -22,8 +22,8 @@ const productSchema = z.object({
     .refine((val) => !isNaN(parseInt(val)) && parseInt(val) >= 0 && Number.isInteger(parseFloat(val)), {
       message: 'Las existencias deben ser un número entero mayor o igual a 0'
     }),
-  categoria_id: z.string().min(1, 'Selecciona una categoría'),
-  proveedor_id: z.string().min(1, 'Selecciona un proveedor'),
+  categoria_id: z.string().optional(),
+  proveedor_id: z.string().optional(),
 });
 
 const ProductFormModal = ({ show, handleClose, product, onSave }) => {
