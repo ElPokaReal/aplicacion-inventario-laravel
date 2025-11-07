@@ -1,38 +1,61 @@
-import React, { useState, useEffect } from 'react';
-import { Save, PlusCircle, X, User, Phone, Mail } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Save, PlusCircle, X, User, Phone, Mail, AlertCircle } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 
+// Schema de validación con Zod
+const providerSchema = z.object({
+  name: z.string()
+    .min(3, 'El nombre debe tener al menos 3 caracteres')
+    .max(255, 'El nombre no puede exceder 255 caracteres'),
+  phone: z.string()
+    .optional()
+    .refine((val) => !val || /^[\d\s+\-()]+$/.test(val), {
+      message: 'El teléfono solo puede contener números, espacios y los caracteres + - ( )'
+    }),
+  email: z.string()
+    .optional()
+    .refine((val) => !val || z.string().email().safeParse(val).success, {
+      message: 'Ingresa un correo electrónico válido'
+    }),
+});
+
 const ProviderFormModal = ({ show, handleClose, provider, onSave }) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    email: '',
+  const { register, handleSubmit: handleFormSubmit, formState: { errors }, reset } = useForm({
+    resolver: zodResolver(providerSchema),
+    defaultValues: {
+      name: '',
+      phone: '',
+      email: '',
+    }
   });
 
   useEffect(() => {
-    if (provider) {
-      setFormData({
-        name: provider.name || '',
-        phone: provider.phone || '',
-        email: provider.email || '',
-      });
+    if (show) {
+      // Resetear inmediatamente cuando se abre el modal
+      if (provider) {
+        reset({
+          name: provider.name || '',
+          phone: provider.phone || '',
+          email: provider.email || '',
+        });
+      } else {
+        reset({
+          name: '',
+          phone: '',
+          email: '',
+        });
+      }
     } else {
-      setFormData({
-        name: '',
-        phone: '',
-        email: '',
-      });
+      // Limpiar cuando se cierra para evitar flash de datos antiguos
+      reset();
     }
-  }, [provider]);
+  }, [provider, show, reset]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (formData) => {
     try {
       if (provider) {
         await api.put(`/providers/${provider.id}`, formData);
@@ -45,7 +68,13 @@ const ProviderFormModal = ({ show, handleClose, provider, onSave }) => {
       handleClose();
     } catch (err) {
       console.error('Error al guardar el proveedor:', err);
-      toast.error('Error al guardar el proveedor. Verifique los datos.');
+      if (err.response?.data?.errors) {
+        Object.keys(err.response.data.errors).forEach(key => {
+          toast.error(err.response.data.errors[key][0]);
+        });
+      } else {
+        toast.error('Error al guardar el proveedor. Verifique los datos.');
+      }
     }
   };
 
@@ -67,7 +96,7 @@ const ProviderFormModal = ({ show, handleClose, provider, onSave }) => {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleFormSubmit(onSubmit)} className="space-y-4">
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                   Nombre
@@ -79,14 +108,19 @@ const ProviderFormModal = ({ show, handleClose, provider, onSave }) => {
                   <input
                     type="text"
                     id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
+                    {...register('name')}
                     placeholder="Nombre del proveedor"
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
+                      errors.name ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   />
                 </div>
+                {errors.name && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    {errors.name.message}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -100,13 +134,19 @@ const ProviderFormModal = ({ show, handleClose, provider, onSave }) => {
                   <input
                     type="text"
                     id="phone"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
+                    {...register('phone')}
                     placeholder="Ej: +1234567890"
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
+                      errors.phone ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   />
                 </div>
+                {errors.phone && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    {errors.phone.message}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -118,15 +158,21 @@ const ProviderFormModal = ({ show, handleClose, provider, onSave }) => {
                     <Mail className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
-                    type="email"
+                    type="text"
                     id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
+                    {...register('email')}
                     placeholder="correo@ejemplo.com"
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
+                      errors.email ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   />
                 </div>
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
 
               <div className="flex justify-end space-x-3 pt-4">

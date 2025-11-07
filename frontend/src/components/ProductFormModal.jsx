@@ -1,21 +1,48 @@
-import React, { useState, useEffect } from 'react';
-import { Save, PlusCircle, X, DollarSign, Package, Tag, Truck, FileText, Image, ClipboardList } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Save, PlusCircle, X, DollarSign, Package, Tag, Truck, FileText, Image, ClipboardList, AlertCircle } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 
+// Schema de validación con Zod
+const productSchema = z.object({
+  name: z.string()
+    .min(3, 'El nombre debe tener al menos 3 caracteres')
+    .max(255, 'El nombre no puede exceder 255 caracteres'),
+  description: z.string().optional(),
+  price: z.string()
+    .min(1, 'El precio es requerido')
+    .refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
+      message: 'El precio debe ser un número mayor a 0'
+    }),
+  existencias: z.string()
+    .min(1, 'Las existencias son requeridas')
+    .refine((val) => !isNaN(parseInt(val)) && parseInt(val) >= 0 && Number.isInteger(parseFloat(val)), {
+      message: 'Las existencias deben ser un número entero mayor o igual a 0'
+    }),
+  categoria_id: z.string().min(1, 'Selecciona una categoría'),
+  proveedor_id: z.string().min(1, 'Selecciona un proveedor'),
+});
+
 const ProductFormModal = ({ show, handleClose, product, onSave }) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    price: '',
-    existencias: '',
-    categoria_id: '',
-    proveedor_id: '',
-  });
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
   const [categories, setCategories] = useState([]);
   const [providers, setProviders] = useState([]);
+
+  const { register, handleSubmit: handleFormSubmit, formState: { errors }, reset, setValue } = useForm({
+    resolver: zodResolver(productSchema),
+    defaultValues: {
+      name: '',
+      description: '',
+      price: '',
+      existencias: '',
+      categoria_id: '',
+      proveedor_id: '',
+    }
+  });
 
   useEffect(() => {
     fetchCategories();
@@ -23,29 +50,37 @@ const ProductFormModal = ({ show, handleClose, product, onSave }) => {
   }, []);
 
   useEffect(() => {
-    if (product) {
-      setFormData({
-        name: product.name || '',
-        description: product.description || '',
-        price: product.price || '',
-        existencias: product.existencias || '',
-        categoria_id: product.categoria_id || '',
-        proveedor_id: product.proveedor_id || '',
-      });
-      setExistingImages(product.imagenes || []);
+    if (show) {
+      // Resetear inmediatamente cuando se abre el modal
+      if (product) {
+        reset({
+          name: product.name || '',
+          description: product.description || '',
+          price: String(product.price || ''),
+          existencias: String(product.existencias || ''),
+          categoria_id: String(product.categoria_id || ''),
+          proveedor_id: String(product.proveedor_id || ''),
+        });
+        setExistingImages(product.imagenes || []);
+      } else {
+        reset({
+          name: '',
+          description: '',
+          price: '',
+          existencias: '',
+          categoria_id: '',
+          proveedor_id: '',
+        });
+        setExistingImages([]);
+      }
+      setSelectedFiles([]);
     } else {
-      setFormData({
-        name: '',
-        description: '',
-        price: '',
-        existencias: '',
-        categoria_id: '',
-        proveedor_id: '',
-      });
+      // Limpiar cuando se cierra para evitar flash de datos antiguos
+      reset();
       setExistingImages([]);
+      setSelectedFiles([]);
     }
-    setSelectedFiles([]); // Clear selected files on product change
-  }, [product]);
+  }, [product, show, reset]);
 
   const fetchCategories = async () => {
     try {
@@ -67,18 +102,14 @@ const ProductFormModal = ({ show, handleClose, product, onSave }) => {
     }
   };
 
-  const handleChange = (e) => {
-    const { name, value, files } = e.target;
-    if (name === 'imagenes') {
+  const handleFileChange = useCallback((e) => {
+    const files = e.target.files;
+    if (files) {
       setSelectedFiles(Array.from(files));
-    } else {
-      setFormData({ ...formData, [name]: value });
     }
-  };
+  }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const onSubmit = async (formData) => {
     const data = new FormData();
     for (const key in formData) {
       data.append(key, formData[key]);
@@ -89,7 +120,7 @@ const ProductFormModal = ({ show, handleClose, product, onSave }) => {
 
     try {
       if (product) {
-        data.append('_method', 'PUT'); // Laravel expects _method for PUT requests with FormData
+        data.append('_method', 'PUT');
         await api.post(`/products/${product.id}`, data, {
           headers: {
             'Content-Type': 'multipart/form-data',
@@ -108,7 +139,13 @@ const ProductFormModal = ({ show, handleClose, product, onSave }) => {
       handleClose();
     } catch (err) {
       console.error('Error al guardar el producto:', err);
-      toast.error('Error al guardar el producto. Verifique los datos.');
+      if (err.response?.data?.errors) {
+        Object.keys(err.response.data.errors).forEach(key => {
+          toast.error(err.response.data.errors[key][0]);
+        });
+      } else {
+        toast.error('Error al guardar el producto. Verifique los datos.');
+      }
     }
   };
 
@@ -130,7 +167,7 @@ const ProductFormModal = ({ show, handleClose, product, onSave }) => {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleFormSubmit(onSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Name */}
                 <div>
@@ -144,14 +181,19 @@ const ProductFormModal = ({ show, handleClose, product, onSave }) => {
                     <input
                       type="text"
                       id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      required
+                      {...register('name')}
                       placeholder="Nombre del producto"
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
+                        errors.name ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     />
                   </div>
+                  {errors.name && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      {errors.name.message}
+                    </p>
+                  )}
                 </div>
 
                 {/* Price */}
@@ -164,17 +206,21 @@ const ProductFormModal = ({ show, handleClose, product, onSave }) => {
                       <DollarSign className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
-                      type="number"
-                      step="0.01"
+                      type="text"
                       id="price"
-                      name="price"
-                      value={formData.price}
-                      onChange={handleChange}
-                      required
+                      {...register('price')}
                       placeholder="0.00"
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
+                        errors.price ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     />
                   </div>
+                  {errors.price && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      {errors.price.message}
+                    </p>
+                  )}
                 </div>
 
                 {/* Stock */}
@@ -187,16 +233,21 @@ const ProductFormModal = ({ show, handleClose, product, onSave }) => {
                       <Package className="h-5 w-5 text-gray-400" />
                     </div>
                     <input
-                      type="number"
+                      type="text"
                       id="existencias"
-                      name="existencias"
-                      value={formData.existencias}
-                      onChange={handleChange}
-                      required
+                      {...register('existencias')}
                       placeholder="Cantidad en stock"
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
+                        errors.existencias ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     />
                   </div>
+                  {errors.existencias && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      {errors.existencias.message}
+                    </p>
+                  )}
                 </div>
 
                 {/* Category */}
@@ -210,11 +261,10 @@ const ProductFormModal = ({ show, handleClose, product, onSave }) => {
                     </div>
                     <select
                       id="categoria_id"
-                      name="categoria_id"
-                      value={formData.categoria_id}
-                      onChange={handleChange}
-                      required
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      {...register('categoria_id')}
+                      className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
+                        errors.categoria_id ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     >
                       <option value="">Selecciona una categoría</option>
                       {categories.map((cat) => (
@@ -224,6 +274,12 @@ const ProductFormModal = ({ show, handleClose, product, onSave }) => {
                       ))}
                     </select>
                   </div>
+                  {errors.categoria_id && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      {errors.categoria_id.message}
+                    </p>
+                  )}
                 </div>
 
                 {/* Provider */}
@@ -237,11 +293,10 @@ const ProductFormModal = ({ show, handleClose, product, onSave }) => {
                     </div>
                     <select
                       id="proveedor_id"
-                      name="proveedor_id"
-                      value={formData.proveedor_id}
-                      onChange={handleChange}
-                      required
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                      {...register('proveedor_id')}
+                      className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
+                        errors.proveedor_id ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     >
                       <option value="">Selecciona un proveedor</option>
                       {providers.map((prov) => (
@@ -251,6 +306,12 @@ const ProductFormModal = ({ show, handleClose, product, onSave }) => {
                       ))}
                     </select>
                   </div>
+                  {errors.proveedor_id && (
+                    <p className="mt-1 text-sm text-red-600 flex items-center">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      {errors.proveedor_id.message}
+                    </p>
+                  )}
                 </div>
 
                 {/* Description */}
@@ -264,9 +325,7 @@ const ProductFormModal = ({ show, handleClose, product, onSave }) => {
                     </div>
                     <textarea
                       id="description"
-                      name="description"
-                      value={formData.description}
-                      onChange={handleChange}
+                      {...register('description')}
                       placeholder="Descripción del producto"
                       rows="3"
                       className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -288,7 +347,7 @@ const ProductFormModal = ({ show, handleClose, product, onSave }) => {
                       id="imagenes"
                       name="imagenes"
                       multiple
-                      onChange={handleChange}
+                      onChange={handleFileChange}
                       className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                     />
                   </div>

@@ -1,38 +1,61 @@
 import React, { useState, useEffect } from 'react';
-import { Save, PlusCircle, X, User, DollarSign, FileText, CheckCircle } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { Save, PlusCircle, X, User, DollarSign, FileText, CheckCircle, AlertCircle } from 'lucide-react';
 import api from '../api/axios';
 import toast from 'react-hot-toast';
 
+// Schema de validación con Zod
+const debtSchema = z.object({
+  user_id: z.string().min(1, 'Selecciona un empleado'),
+  monto: z.string()
+    .min(1, 'El monto es requerido')
+    .refine((val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0, {
+      message: 'El monto debe ser un número mayor a 0'
+    }),
+  description: z.string().optional(),
+  pagada: z.boolean().optional(),
+});
+
 const DebtFormModal = ({ show, handleClose, debt, onSave }) => {
-  const [formData, setFormData] = useState({
-    user_id: '',
-    monto: '',
-    description: '',
-    pagada: false,
-  });
   const [users, setUsers] = useState([]);
+
+  const { register, handleSubmit: handleFormSubmit, formState: { errors }, reset, watch } = useForm({
+    resolver: zodResolver(debtSchema),
+    defaultValues: {
+      user_id: '',
+      monto: '',
+      description: '',
+      pagada: false,
+    }
+  });
 
   useEffect(() => {
     fetchUsers();
   }, []);
 
   useEffect(() => {
-    if (debt) {
-      setFormData({
-        user_id: debt.user_id || '',
-        monto: debt.monto || '',
-        description: debt.description || '',
-        pagada: debt.pagada || false,
-      });
+    if (show) {
+      if (debt) {
+        reset({
+          user_id: String(debt.user_id || ''),
+          monto: String(debt.monto || ''),
+          description: debt.description || '',
+          pagada: debt.pagada || false,
+        });
+      } else {
+        reset({
+          user_id: '',
+          monto: '',
+          description: '',
+          pagada: false,
+        });
+      }
     } else {
-      setFormData({
-        user_id: '',
-        monto: '',
-        description: '',
-        pagada: false,
-      });
+      reset();
     }
-  }, [debt]);
+  }, [debt, show, reset]);
 
   const fetchUsers = async () => {
     try {
@@ -44,13 +67,7 @@ const DebtFormModal = ({ show, handleClose, debt, onSave }) => {
     }
   };
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({ ...formData, [name]: type === 'checkbox' ? checked : value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (formData) => {
     try {
       if (debt) {
         await api.put(`/debts/${debt.id}`, formData);
@@ -63,7 +80,13 @@ const DebtFormModal = ({ show, handleClose, debt, onSave }) => {
       handleClose();
     } catch (err) {
       console.error('Error al guardar la deuda:', err);
-      toast.error('Error al guardar la deuda. Verifique los datos.');
+      if (err.response?.data?.errors) {
+        Object.keys(err.response.data.errors).forEach(key => {
+          toast.error(err.response.data.errors[key][0]);
+        });
+      } else {
+        toast.error('Error al guardar la deuda. Verifique los datos.');
+      }
     }
   };
 
@@ -85,7 +108,7 @@ const DebtFormModal = ({ show, handleClose, debt, onSave }) => {
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleFormSubmit(onSubmit)} className="space-y-4">
               <div>
                 <label htmlFor="user_id" className="block text-sm font-medium text-gray-700 mb-2">
                   Empleado
@@ -96,11 +119,10 @@ const DebtFormModal = ({ show, handleClose, debt, onSave }) => {
                   </div>
                   <select
                     id="user_id"
-                    name="user_id"
-                    value={formData.user_id}
-                    onChange={handleChange}
-                    required
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    {...register('user_id')}
+                    className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
+                      errors.user_id ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   >
                     <option value="">Selecciona un usuario</option>
                     {users.map((user) => (
@@ -110,6 +132,12 @@ const DebtFormModal = ({ show, handleClose, debt, onSave }) => {
                     ))}
                   </select>
                 </div>
+                {errors.user_id && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    {errors.user_id.message}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -121,17 +149,21 @@ const DebtFormModal = ({ show, handleClose, debt, onSave }) => {
                     <DollarSign className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
-                    type="number"
-                    step="0.01"
+                    type="text"
                     id="monto"
-                    name="monto"
-                    value={formData.monto}
-                    onChange={handleChange}
-                    required
+                    {...register('monto')}
                     placeholder="0.00"
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    className={`w-full pl-10 pr-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
+                      errors.monto ? 'border-red-500' : 'border-gray-300'
+                    }`}
                   />
                 </div>
+                {errors.monto && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    {errors.monto.message}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -144,9 +176,7 @@ const DebtFormModal = ({ show, handleClose, debt, onSave }) => {
                   </div>
                   <textarea
                     id="description"
-                    name="description"
-                    value={formData.description}
-                    onChange={handleChange}
+                    {...register('description')}
                     placeholder="Descripción de la deuda"
                     rows="3"
                     className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -159,10 +189,8 @@ const DebtFormModal = ({ show, handleClose, debt, onSave }) => {
                   <div className="flex items-center h-5">
                     <input
                       id="pagada"
-                      name="pagada"
                       type="checkbox"
-                      checked={formData.pagada}
-                      onChange={handleChange}
+                      {...register('pagada')}
                       className="focus:ring-primary-500 h-4 w-4 text-primary-600 border-gray-300 rounded"
                     />
                   </div>

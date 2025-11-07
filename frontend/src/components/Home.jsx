@@ -66,12 +66,6 @@ const Home = () => {
             >
               Iniciar Sesión
             </Link>
-            <Link 
-              to="/register" 
-              className="block w-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-6 py-3 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200 text-center"
-            >
-              Registrarse
-            </Link>
           </div>
         </div>
       </div>

@@ -86,14 +86,9 @@ const Navbar = () => {
                 <LogOut size={18} className="mr-1" /> Cerrar Sesión ({user.name})
               </button>
             ) : (
-              <>
-                <Link className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center" to="/login">
-                  <LogIn size={18} className="mr-1" /> Iniciar Sesión
-                </Link>
-                <Link className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center" to="/register">
-                  <UserPlus size={18} className="mr-1" /> Registrarse
-                </Link>
-              </>
+              <Link className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200 flex items-center" to="/login">
+                <LogIn size={18} className="mr-1" /> Iniciar Sesión
+              </Link>
             )}
           </div>
         </div>

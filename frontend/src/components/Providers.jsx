@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import api from '../api/axios';
 import ProviderFormModal from './ProviderFormModal';
+import ConfirmDialog from './ConfirmDialog';
 import DataTable from './DataTable';
 import { PlusCircle, Edit, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -9,6 +10,8 @@ const Providers = () => {
   const [providers, setProviders] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState(null);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [providerToDelete, setProviderToDelete] = useState(null);
 
   useEffect(() => {
     fetchProviders();
@@ -24,35 +27,47 @@ const Providers = () => {
     }
   };
 
-  const handleShowModal = (provider = null) => {
+  const handleShowModal = useCallback((provider = null) => {
     setSelectedProvider(provider);
     setShowModal(true);
-  };
+  }, []);
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setShowModal(false);
     setSelectedProvider(null);
-  };
+  }, []);
 
-  const handleSaveProvider = () => {
+  const handleSaveProvider = useCallback(() => {
     fetchProviders();
     handleCloseModal();
     // Toast for save/edit will be handled in ProviderFormModal
-  };
+  }, [handleCloseModal]);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar este proveedor?')) {
-      return;
-    }
+  const handleDeleteClick = useCallback((id) => {
+    setProviderToDelete(id);
+    setShowConfirmDialog(true);
+  }, []);
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!providerToDelete) return;
+    
     try {
-      await api.delete(`/providers/${id}`);
+      await api.delete(`/providers/${providerToDelete}`);
       fetchProviders();
       toast.success('Proveedor eliminado con éxito!');
     } catch (err) {
       toast.error('Error al eliminar el proveedor.');
       console.error(err);
+    } finally {
+      setShowConfirmDialog(false);
+      setProviderToDelete(null);
     }
-  };
+  }, [providerToDelete]);
+
+  const handleCancelDelete = useCallback(() => {
+    setShowConfirmDialog(false);
+    setProviderToDelete(null);
+  }, []);
 
   const columns = useMemo(
     () => [
@@ -96,7 +111,7 @@ const Providers = () => {
             </button>
             <button
               className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1 rounded transition-colors duration-200"
-              onClick={() => handleDelete(row.original.id)}
+              onClick={() => handleDeleteClick(row.original.id)}
             >
               <Trash2 size={16} />
             </button>
@@ -104,7 +119,7 @@ const Providers = () => {
         ),
       },
     ],
-    []
+    [handleShowModal, handleDeleteClick]
   );
 
   return (
@@ -130,6 +145,17 @@ const Providers = () => {
         handleClose={handleCloseModal}
         provider={selectedProvider}
         onSave={handleSaveProvider}
+      />
+
+      <ConfirmDialog
+        show={showConfirmDialog}
+        title="Eliminar Proveedor"
+        message="¿Estás seguro de que deseas eliminar este proveedor? Esta acción no se puede deshacer."
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        type="danger"
       />
     </div>
   );

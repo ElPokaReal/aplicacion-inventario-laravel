@@ -3,7 +3,6 @@ import { Routes, Route } from 'react-router-dom';
 import Home from '../components/Home';
 import Layout from '../components/Layout';
 import Login from '../components/Auth/Login';
-import Register from '../components/Auth/Register';
 import ForgotPassword from '../components/Auth/ForgotPassword';
 import ResetPassword from '../components/Auth/ResetPassword';
 import Dashboard from '../components/Dashboard';
@@ -14,6 +13,7 @@ import Sales from '../components/Sales';
 import Debts from '../components/Debts';
 import Categories from '../components/Categories';
 import Reports from '../components/Reports';
+import Users from '../components/Users';
 import ProtectedRoute from '../components/ProtectedRoute';
 import Shop from '../components/Shop';
 import Cart from '../components/Cart';
@@ -24,7 +24,6 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
 
@@ -62,6 +61,10 @@ const AppRoutes = () => {
       <Route 
         path="/admin/reports"
         element={<ProtectedRoute adminOnly={true}><Layout><Reports /></Layout></ProtectedRoute>}
+      />
+      <Route 
+        path="/admin/users"
+        element={<ProtectedRoute adminOnly={true}><Layout><Users /></Layout></ProtectedRoute>}
       />
 
       {/* Rutas de Usuario */}

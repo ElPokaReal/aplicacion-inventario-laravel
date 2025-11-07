@@ -1,14 +1,26 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { z } from 'zod';
 import api from '../api/axios';
+import ConfirmDialog from './ConfirmDialog';
 import DataTable from './DataTable';
-import { PlusCircle, Edit, Trash2, Save, X } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, Save, X, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+// Schema de validación simple
+const categorySchema = z.object({
+  nombre: z.string()
+    .min(2, 'El nombre debe tener al menos 2 caracteres')
+    .max(100, 'El nombre no puede exceder 100 caracteres'),
+});
 
 const Categories = () => {
   const [categories, setCategories] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [categoryName, setCategoryName] = useState('');
+  const [errors, setErrors] = useState({});
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState(null);
 
   useEffect(() => {
     fetchCategories();
@@ -38,6 +50,19 @@ const Categories = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrors({});
+    
+    // Validar con Zod
+    const validation = categorySchema.safeParse({ nombre: categoryName });
+    if (!validation.success) {
+      const fieldErrors = {};
+      validation.error.errors.forEach(err => {
+        fieldErrors[err.path[0]] = err.message;
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+    
     try {
       if (selectedCategory) {
         await api.put(`/categories/${selectedCategory.id}`, { nombre: categoryName });
@@ -50,23 +75,41 @@ const Categories = () => {
       handleCloseModal();
     } catch (err) {
       console.error('Error al guardar la categoría:', err);
-      toast.error('Error al guardar la categoría. Verifique los datos.');
+      if (err.response?.data?.errors) {
+        Object.keys(err.response.data.errors).forEach(key => {
+          toast.error(err.response.data.errors[key][0]);
+        });
+      } else {
+        toast.error('Error al guardar la categoría. Verifique los datos.');
+      }
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar esta categoría?')) {
-      return;
-    }
+  const handleDeleteClick = useCallback((id) => {
+    setCategoryToDelete(id);
+    setShowConfirmDialog(true);
+  }, []);
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!categoryToDelete) return;
+    
     try {
-      await api.delete(`/categories/${id}`);
+      await api.delete(`/categories/${categoryToDelete}`);
       fetchCategories();
       toast.success('Categoría eliminada con éxito!');
     } catch (err) {
       toast.error('Error al eliminar la categoría.');
       console.error(err);
+    } finally {
+      setShowConfirmDialog(false);
+      setCategoryToDelete(null);
     }
-  };
+  }, [categoryToDelete]);
+
+  const handleCancelDelete = useCallback(() => {
+    setShowConfirmDialog(false);
+    setCategoryToDelete(null);
+  }, []);
 
   const columns = useMemo(
     () => [
@@ -96,7 +139,7 @@ const Categories = () => {
             </button>
             <button
               className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1 rounded transition-colors duration-200"
-              onClick={() => handleDelete(row.original.id)}
+              onClick={() => handleDeleteClick(row.original.id)}
             >
               <Trash2 size={16} />
             </button>
@@ -104,7 +147,7 @@ const Categories = () => {
         ),
       },
     ],
-    []
+    [handleDeleteClick]
   );
 
   return (
@@ -149,11 +192,21 @@ const Categories = () => {
                   type="text"
                   id="categoryName"
                   value={categoryName}
-                  onChange={(e) => setCategoryName(e.target.value)}
-                  required
+                  onChange={(e) => {
+                    setCategoryName(e.target.value);
+                    setErrors({});
+                  }}
                   placeholder="Nombre de la categoría"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  className={`w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 ${
+                    errors.nombre ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                  }`}
                 />
+                {errors.nombre && (
+                  <p className="mt-1 text-sm text-red-600 flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    {errors.nombre}
+                  </p>
+                )}
               </div>
               <div className="flex justify-end space-x-3">
                 <button
@@ -182,6 +235,17 @@ const Categories = () => {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        show={showConfirmDialog}
+        title="Eliminar Categoría"
+        message="¿Estás seguro de que deseas eliminar esta categoría? Esta acción no se puede deshacer."
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        type="danger"
+      />
     </div>
   );
 };

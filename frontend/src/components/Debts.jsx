@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import DebtFormModal from './DebtFormModal';
+import ConfirmDialog from './ConfirmDialog';
 import DataTable from './DataTable';
 import { PlusCircle, Edit, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -13,6 +14,8 @@ const Debts = () => {
 
   const [showModal, setShowModal] = useState(false);
   const [selectedDebt, setSelectedDebt] = useState(null);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [debtToDelete, setDebtToDelete] = useState(null);
 
   useEffect(() => {
     fetchDebts();
@@ -44,19 +47,31 @@ const Debts = () => {
     // Toast for save/edit will be handled in DebtFormModal
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar esta deuda?')) {
-      return;
-    }
+  const handleDeleteClick = useCallback((id) => {
+    setDebtToDelete(id);
+    setShowConfirmDialog(true);
+  }, []);
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!debtToDelete) return;
+    
     try {
-      await api.delete(`/debts/${id}`);
+      await api.delete(`/debts/${debtToDelete}`);
       fetchDebts();
       toast.success('Deuda eliminada con éxito!');
     } catch (err) {
       toast.error('Error al eliminar la deuda.');
       console.error(err);
+    } finally {
+      setShowConfirmDialog(false);
+      setDebtToDelete(null);
     }
-  };
+  }, [debtToDelete]);
+
+  const handleCancelDelete = useCallback(() => {
+    setShowConfirmDialog(false);
+    setDebtToDelete(null);
+  }, []);
 
   const columns = useMemo(
     () => [
@@ -122,7 +137,7 @@ const Debts = () => {
               </button>
               <button
                 className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1 rounded transition-colors duration-200"
-                onClick={() => handleDelete(row.original.id)}
+                onClick={() => handleDeleteClick(row.original.id)}
               >
                 <Trash2 size={16} />
               </button>
@@ -130,7 +145,7 @@ const Debts = () => {
           ) : null,
       },
     ],
-    [isAdmin]
+    [isAdmin, handleDeleteClick]
   );
 
   return (
@@ -158,6 +173,17 @@ const Debts = () => {
         handleClose={handleCloseModal}
         debt={selectedDebt}
         onSave={handleSaveDebt}
+      />
+
+      <ConfirmDialog
+        show={showConfirmDialog}
+        title="Eliminar Deuda"
+        message="¿Estás seguro de que deseas eliminar esta deuda? Esta acción no se puede deshacer."
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        type="danger"
       />
     </div>
   );

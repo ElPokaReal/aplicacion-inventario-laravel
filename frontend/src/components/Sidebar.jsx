@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, LayoutDashboard, Package, Truck, ShoppingCart, Wallet, LogOut, Settings, FileText, Moon, Sun } from 'lucide-react';
+import { Home, LayoutDashboard, Package, Truck, ShoppingCart, Wallet, LogOut, Settings, FileText, Moon, Sun, Users } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
@@ -75,6 +75,15 @@ const Sidebar = () => {
         >
           <Wallet size={20} className="mr-3" />
           Deudas
+        </Link>
+        <Link
+          to="/admin/users"
+          className={`flex items-center px-6 py-3 text-base transition-colors duration-200 ${
+            isActive('/admin/users') ? 'bg-gray-800 dark:bg-gray-900' : 'hover:bg-gray-700 dark:hover:bg-gray-800'
+          }`}
+        >
+          <Users size={20} className="mr-3" />
+          Usuarios
         </Link>
         <Link
           to="/admin/categories"

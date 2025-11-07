@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import api from '../api/axios';
 import ProductFormModal from './ProductFormModal';
+import ConfirmDialog from './ConfirmDialog';
 import DataTable from './DataTable';
 import { PlusCircle, Edit, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -9,6 +10,8 @@ const Products = () => {
   const [products, setProducts] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
 
   useEffect(() => {
     fetchProducts();
@@ -24,35 +27,47 @@ const Products = () => {
     }
   };
 
-  const handleShowModal = (product = null) => {
+  const handleShowModal = useCallback((product = null) => {
     setSelectedProduct(product);
     setShowModal(true);
-  };
+  }, []);
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setShowModal(false);
     setSelectedProduct(null);
-  };
+  }, []);
 
-  const handleSaveProduct = () => {
+  const handleSaveProduct = useCallback(() => {
     fetchProducts();
     handleCloseModal();
     // Toast for save/edit will be handled in ProductFormModal
-  };
+  }, [handleCloseModal]);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('¿Estás seguro de que deseas eliminar este producto?')) {
-      return;
-    }
+  const handleDeleteClick = useCallback((id) => {
+    setProductToDelete(id);
+    setShowConfirmDialog(true);
+  }, []);
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!productToDelete) return;
+    
     try {
-      await api.delete(`/products/${id}`);
+      await api.delete(`/products/${productToDelete}`);
       fetchProducts();
       toast.success('Producto eliminado con éxito!');
     } catch (err) {
       toast.error('Error al eliminar el producto.');
       console.error(err);
+    } finally {
+      setShowConfirmDialog(false);
+      setProductToDelete(null);
     }
-  };
+  }, [productToDelete]);
+
+  const handleCancelDelete = useCallback(() => {
+    setShowConfirmDialog(false);
+    setProductToDelete(null);
+  }, []);
 
   const columns = useMemo(
     () => [
@@ -144,7 +159,7 @@ const Products = () => {
             </button>
             <button
               className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1 rounded transition-colors duration-200"
-              onClick={() => handleDelete(row.original.id)}
+              onClick={() => handleDeleteClick(row.original.id)}
             >
               <Trash2 size={16} />
             </button>
@@ -152,7 +167,7 @@ const Products = () => {
         ),
       },
     ],
-    [handleDelete, handleShowModal]
+    [handleDeleteClick, handleShowModal]
   );
 
   return (
@@ -178,6 +193,17 @@ const Products = () => {
         handleClose={handleCloseModal}
         product={selectedProduct}
         onSave={handleSaveProduct}
+      />
+
+      <ConfirmDialog
+        show={showConfirmDialog}
+        title="Eliminar Producto"
+        message="¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer."
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        type="danger"
       />
     </div>
   );

@@ -292,17 +292,6 @@ const Login = () => {
               </button>
             </div>
 
-            <div className="text-center">
-              <span className="text-sm text-gray-600">
-                ¿No tienes una cuenta?{' '}
-                <Link
-                  to="/register"
-                  className="font-medium text-primary-600 hover:text-primary-500"
-                >
-                  Regístrate aquí
-                </Link>
-              </span>
-            </div>
           </form>
         </div>
       </div>

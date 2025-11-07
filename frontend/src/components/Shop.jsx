@@ -129,7 +129,7 @@ const Shop = () => {
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-colors duration-200">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                  <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
+                  <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Categoría</label>
                   <div className="relative">
                     <select
                       id="category"
@@ -149,22 +149,22 @@ const Shop = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Precio mínimo</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Precio mínimo</label>
                   <input
                     type="number"
                     placeholder="0.00"
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     value={minPrice}
                     onChange={(e) => setMinPrice(e.target.value)}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Precio máximo</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Precio máximo</label>
                   <input
                     type="number"
                     placeholder="1000.00"
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                     value={maxPrice}
                     onChange={(e) => setMaxPrice(e.target.value)}
                   />
@@ -175,14 +175,14 @@ const Shop = () => {
         )}
       </div>
 
-      <h2 className="text-4xl font-extrabold text-gray-900 mb-12 text-center">Nuestros Productos</h2>
-      {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">{error}</div>}
+      <h2 className="text-4xl font-extrabold text-gray-900 dark:text-gray-100 mb-12 text-center">Nuestros Productos</h2>
+      {error && <div className="bg-red-100 dark:bg-red-900 border border-red-400 dark:border-red-700 text-red-700 dark:text-red-200 px-4 py-3 rounded mb-6">{error}</div>}
 
       {filteredProducts.length === 0 && !error ? (
         <div className="text-center py-16">
-          <div className="bg-blue-50 border-2 border-blue-200 text-blue-700 px-8 py-10 rounded-xl max-w-lg mx-auto">
+          <div className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 px-8 py-10 rounded-xl max-w-lg mx-auto">
             <h4 className="text-2xl font-bold mb-3">No hay productos que coincidan con tu búsqueda.</h4>
-            <p className="text-blue-600">Intenta ajustar tus filtros.</p>
+            <p className="text-blue-600 dark:text-blue-400">Intenta ajustar tus filtros.</p>
           </div>
         </div>
       ) : (
@@ -197,21 +197,21 @@ const Shop = () => {
                     alt={product.name} 
                   />
                 ) : (
-                  <div className="w-full h-64 bg-gray-200 flex items-center justify-center">
-                    <span className="text-gray-400">Sin imagen</span>
+                  <div className="w-full h-64 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                    <span className="text-gray-400 dark:text-gray-500">Sin imagen</span>
                   </div>
                 )}
                 <div className="absolute inset-0 bg-black bg-opacity-20 group-hover:bg-opacity-40 transition-all duration-300"></div>
               </div>
               <div className="p-5">
-                <h5 className="text-xl font-bold text-gray-800 mb-1 truncate">{product.name}</h5>
-                <p className="text-gray-500 text-sm mb-3 line-clamp-1">{product.description}</p>
+                <h5 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-1 truncate">{product.name}</h5>
+                <p className="text-gray-500 dark:text-gray-400 text-sm mb-3 line-clamp-1">{product.description}</p>
                 <div className="flex justify-between items-center mb-4">
-                  <p className="text-3xl font-black text-primary-600">$ {product.price}</p>
-                  <p className="text-sm text-gray-400">Stock: {product.existencias}</p>
+                  <p className="text-3xl font-black text-primary-600 dark:text-primary-400">$ {product.price}</p>
+                  <p className="text-sm text-gray-400 dark:text-gray-500">Stock: {product.existencias}</p>
                 </div>
                 <button
-                  className={`w-full py-3 px-4 rounded-lg font-semibold text-white transition-colors duration-300 ${product.existencias === 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700'}`}
+                  className={`w-full py-3 px-4 rounded-lg font-semibold text-white transition-colors duration-300 ${product.existencias === 0 ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600'}`}
                   onClick={() => handleAddToCart(product)}
                   disabled={product.existencias === 0}
                 >
