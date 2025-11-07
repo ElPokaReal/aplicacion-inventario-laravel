@@ -1,7 +1,37 @@
 const { app, BrowserWindow, ipcMain, dialog, session } = require('electron');
 const path = require('path');
+const fs = require('fs');
+const handleSquirrelEvent = require('./squirrel-events');
+
+// Manejar eventos de Squirrel (instalación/actualización/desinstalación)
+if (require('electron-squirrel-startup') || handleSquirrelEvent(app)) {
+  app.quit();
+}
 
 let mainWindow;
+let welcomeWindow;
+
+function getIconPath() {
+  const isDev = !app.isPackaged;
+  const platform = process.platform;
+  
+  // Determinar la ruta base según el entorno
+  const baseDir = isDev 
+    ? path.join(__dirname, '..', 'public')
+    : path.join(process.resourcesPath, 'app.asar', 'public');
+  
+  // Usar PNG para todas las plataformas (electron-builder lo convierte automáticamente)
+  const iconFile = 'icon.png';
+  const iconPath = path.join(baseDir, iconFile);
+  
+  // Log para debugging
+  console.log('Platform:', platform);
+  console.log('Is Dev:', isDev);
+  console.log('Icon path:', iconPath);
+  console.log('Icon exists:', require('fs').existsSync(iconPath));
+  
+  return iconPath;
+}
 
 function createWindow() {
   // Determinar si estamos en desarrollo o producción
@@ -16,18 +46,8 @@ function createWindow() {
   // Configurar partición de sesión persistente
   const partition = 'persist:inventario';
   
-  // Ruta del icono según el entorno
-  let iconPath;
-  if (isDev) {
-    iconPath = path.join(__dirname, '..', 'public', 'app-icon.png');
-  } else {
-    // En producción, usar el PNG dentro del paquete (asar)
-    // __dirname apunta a ".../resources/app.asar/electron", por lo que subimos y vamos a public/
-    iconPath = path.join(__dirname, '..', 'public', 'icon.ico');
-  }
-  
-  console.log('Icon path:', iconPath);
-  console.log('Icon exists:', require('fs').existsSync(iconPath));
+  // Obtener ruta del icono según la plataforma
+  const iconPath = getIconPath();
 
   mainWindow = new BrowserWindow({
     width: 1400,
@@ -84,9 +104,71 @@ function createWindow() {
   });
 }
 
+// Verificar si es la primera ejecución
+function isFirstRun() {
+  const userDataPath = app.getPath('userData');
+  const firstRunFile = path.join(userDataPath, '.first-run-complete');
+  
+  if (fs.existsSync(firstRunFile)) {
+    return false;
+  }
+  
+  // Crear el archivo para marcar que ya se ejecutó
+  try {
+    fs.writeFileSync(firstRunFile, new Date().toISOString());
+  } catch (err) {
+    console.error('Error creating first run file:', err);
+  }
+  
+  return true;
+}
+
+// Crear ventana de bienvenida
+function createWelcomeWindow() {
+  const isDev = !app.isPackaged;
+  
+  welcomeWindow = new BrowserWindow({
+    width: 600,
+    height: 700,
+    resizable: false,
+    frame: false,
+    transparent: true,
+    alwaysOnTop: true,
+    center: true,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, 'preload.js')
+    }
+  });
+
+  const welcomePath = isDev
+    ? path.join(__dirname, '..', 'public', 'welcome.html')
+    : path.join(process.resourcesPath, 'app.asar', 'public', 'welcome.html');
+
+  welcomeWindow.loadFile(welcomePath);
+
+  // Cerrar ventana de bienvenida y abrir la principal
+  welcomeWindow.on('closed', () => {
+    welcomeWindow = null;
+    createWindow();
+  });
+
+  // Auto-cerrar después de 10 segundos
+  setTimeout(() => {
+    if (welcomeWindow && !welcomeWindow.isDestroyed()) {
+      welcomeWindow.close();
+    }
+  }, 10000);
+}
+
 // Inicializar app
 app.whenReady().then(() => {
-  createWindow();
+  if (isFirstRun()) {
+    createWelcomeWindow();
+  } else {
+    createWindow();
+  }
 });
 
 app.on('window-all-closed', () => {
@@ -114,4 +196,10 @@ ipcMain.handle('get-app-path', () => {
 
 ipcMain.handle('get-app-version', () => {
   return app.getVersion();
+});
+
+ipcMain.handle('close-welcome', () => {
+  if (welcomeWindow && !welcomeWindow.isDestroyed()) {
+    welcomeWindow.close();
+  }
 });

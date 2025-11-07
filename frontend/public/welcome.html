@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bienvenido</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      color: white;
+      overflow: hidden;
+    }
+
+    .container {
+      text-align: center;
+      padding: 40px;
+      max-width: 500px;
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .icon {
+      font-size: 100px;
+      margin-bottom: 20px;
+      animation: bounce 2s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 15px;
+      font-weight: 600;
+    }
+
+    p {
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 10px;
+      opacity: 0.95;
+    }
+
+    .features {
+      margin: 30px 0;
+      text-align: left;
+      display: inline-block;
+    }
+
+    .feature {
+      display: flex;
+      align-items: center;
+      margin: 15px 0;
+      font-size: 15px;
+    }
+
+    .feature-icon {
+      font-size: 24px;
+      margin-right: 12px;
+      min-width: 30px;
+    }
+
+    .button {
+      background: white;
+      color: #667eea;
+      padding: 15px 40px;
+      border-radius: 30px;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 20px;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .button:active {
+      transform: translateY(0);
+    }
+
+    .version {
+      margin-top: 30px;
+      font-size: 12px;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">🎉</div>
+    <h1>¡Bienvenido a Inventario Mi Ángel!</h1>
+    <p>Gracias por instalar nuestra aplicación de gestión de inventario.</p>
+    
+    <div class="features">
+      <div class="feature">
+        <span class="feature-icon">📦</span>
+        <span>Gestiona tu inventario fácilmente</span>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">📊</span>
+        <span>Reportes y estadísticas en tiempo real</span>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">🚀</span>
+        <span>Interfaz rápida y moderna</span>
+      </div>
+      <div class="feature">
+        <span class="feature-icon">💾</span>
+        <span>Tus datos siempre seguros</span>
+      </div>
+    </div>
+
+    <button class="button" onclick="closeWindow()">Comenzar</button>
+    
+    <div class="version">Versión 1.0.7</div>
+  </div>
+
+  <script>
+    function closeWindow() {
+      // Cerrar la ventana de bienvenida
+      if (window.electronAPI) {
+        window.electronAPI.closeWelcome();
+      } else {
+        window.close();
+      }
+    }
+
+    // Auto-cerrar después de 10 segundos si no se hace clic
+    setTimeout(() => {
+      closeWindow();
+    }, 10000);
+  </script>
+</body>
+</html>

@@ -10,21 +10,22 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "generate-icon": "node scripts/generate-icon.js",
-    "generate-icon:multi": "node scripts/generate-icon-multi.js",
-    "generate-icon:ico": "node scripts/generate-icon-ico.js",
-    "electron": "cross-env NODE_ENV=development electron .",
-    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && npm run electron\"",
-    "electron:build": "npm run build && electron-builder",
-    "electron:build:win": "npm run build && electron-builder --win",
-    "electron:build:mac": "npm run build && electron-builder --mac",
-    "electron:build:linux": "npm run build && electron-builder --linux"
+    "icons": "node scripts/create-ico-simple.js",
+    "icons:tray": "node scripts/generate-tray-icons.js",
+    "start": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
+    "package": "electron-forge package",
+    "make": "npm run build && electron-forge make",
+    "publish": "electron-forge publish",
+    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:build": "npm run build && electron-forge make",
+    "electron:build:win": "npm run build && electron-forge make --platform=win32"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
     "@react-pdf/renderer": "^4.3.1",
     "@tanstack/react-table": "^8.21.3",
     "axios": "^1.10.0",
+    "electron-squirrel-startup": "^1.0.1",
     "exceljs": "^4.4.0",
     "lucide-react": "^0.525.0",
     "react": "^19.1.0",
@@ -36,6 +37,10 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@electron-forge/cli": "^7.10.2",
+    "@electron-forge/maker-squirrel": "^7.10.2",
+    "@electron-forge/maker-zip": "^7.10.2",
+    "@electron-forge/plugin-vite": "^7.10.2",
     "@eslint/js": "^9.30.1",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
@@ -49,6 +54,7 @@
     "eslint": "^9.30.1",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
+    "fs-extra": "^11.3.2",
     "globals": "^16.3.0",
     "png-to-ico": "^2.1.8",
     "postcss": "^8.5.6",
@@ -59,60 +65,7 @@
     "vite": "^7.0.4",
     "wait-on": "^9.0.1"
   },
-  "build": {
-    "appId": "com.miangel.inventario",
-    "productName": "Inventario Mi Ángel",
-    "copyright": "Copyright © 2025 Comercializadora Mi Ángel",
-    "directories": {
-      "output": "release"
-    },
-    "files": [
-      "dist/**/*",
-      "electron/**/*",
-      "package.json",
-      "public/icon.ico",
-      "!node_modules/**/*",
-      "!src/**/*"
-    ],
-    "compression": "maximum",
-    "win": {
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        }
-      ],
-      "icon": "public/icon.ico",
-      "artifactName": "${productName}-${version}-Setup.${ext}",
-      "signAndEditExecutable": false,
-      "verifyUpdateCodeSignature": false
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
-      "createStartMenuShortcut": true,
-      "differentialPackage": true
-    },
-    "mac": {
-      "target": [
-        "dmg"
-      ],
-      "icon": "public/app-icon.ico",
-      "category": "public.app-category.business"
-    },
-    "linux": {
-      "target": [
-        "AppImage"
-      ],
-      "icon": "public/app-icon.ico",
-      "category": "Office"
-    },
-    "asar": true,
-    "asarUnpack": [
-      "**/*.node"
-    ]
+  "config": {
+    "forge": "./forge.config.js"
   }
 }

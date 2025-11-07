@@ -13,6 +13,11 @@ contextBridge.exposeInMainWorld('electron', {
   platform: process.platform
 });
 
+// API para la ventana de bienvenida
+contextBridge.exposeInMainWorld('electronAPI', {
+  closeWelcome: () => ipcRenderer.invoke('close-welcome')
+});
+
 // Prevenir que el renderer acceda directamente a Node.js
 window.addEventListener('DOMContentLoaded', () => {
   console.log('Electron Preload Script Loaded');
