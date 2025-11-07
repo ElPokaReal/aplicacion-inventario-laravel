@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, session } = require('electron');
 const path = require('path');
 
 let mainWindow;
@@ -6,6 +6,15 @@ let mainWindow;
 function createWindow() {
   // Determinar si estamos en desarrollo o producción
   const isDev = !app.isPackaged;
+  
+  // Configurar la sesión para persistir datos (localStorage, cookies, etc.)
+  const ses = session.defaultSession;
+  
+  // Habilitar persistencia de datos
+  ses.setUserAgent(ses.getUserAgent() + ' ElectronApp');
+  
+  // Configurar partición de sesión persistente
+  const partition = 'persist:inventario';
   
   // Ruta del icono según el entorno
   let iconPath;
@@ -31,7 +40,9 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       enableRemoteModule: false,
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, 'preload.js'),
+      partition: partition, // Usar partición persistente
+      webSecurity: true
     },
     backgroundColor: '#f3f4f6',
     show: false,

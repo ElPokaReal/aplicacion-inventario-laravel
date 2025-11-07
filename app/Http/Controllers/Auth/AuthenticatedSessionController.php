@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -16,13 +17,21 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): JsonResponse
     {
-        $request->authenticate();
-
-        $request->session()->regenerate();
-
-        $user = $request->user()->load('roles');
+        // Validar credenciales sin crear sesión web
+        $credentials = $request->only('email', 'password');
         
-        // Crear un token de API para Electron/SPA
+        if (!Auth::attempt($credentials)) {
+            throw ValidationException::withMessages([
+                'email' => ['Las credenciales proporcionadas no coinciden con nuestros registros.'],
+            ]);
+        }
+
+        $user = Auth::user()->load('roles');
+        
+        // Revocar tokens anteriores del usuario para evitar acumulación
+        $user->tokens()->delete();
+        
+        // Crear un nuevo token de API para Electron/SPA
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
@@ -36,11 +45,8 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): Response
     {
-        Auth::guard('web')->logout();
-
-        $request->session()->invalidate();
-
-        $request->session()->regenerateToken();
+        // Revocar el token actual del usuario autenticado
+        $request->user()->currentAccessToken()->delete();
 
         return response()->noContent();
     }
