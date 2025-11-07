@@ -62,9 +62,39 @@ function handleSquirrelEvent(app) {
       // Remover accesos directos
       spawnUpdate(['--removeShortcut', exeName]);
       
+      // Mostrar notificación de despedida
+      setTimeout(() => {
+        const { Notification } = require('electron');
+        
+        if (Notification.isSupported()) {
+          const notification = new Notification({
+            title: '👋 Hasta Pronto',
+            body: 'Inventario Mi Ángel ha sido desinstalado.\n¡Gracias por usarlo!',
+            silent: false
+          });
+          
+          notification.show();
+        }
+      }, 500);
+      
+      // Limpiar datos de usuario (opcional)
+      // ADVERTENCIA: Esto eliminará TODOS los datos de la app
+      // Descomenta solo si quieres eliminar datos al desinstalar
+      /*
+      setTimeout(() => {
+        const userDataPath = app.getPath('userData');
+        try {
+          fs.rmSync(userDataPath, { recursive: true, force: true });
+          console.log('User data deleted');
+        } catch (err) {
+          console.error('Error deleting user data:', err);
+        }
+      }, 800);
+      */
+      
       setTimeout(() => {
         app.quit();
-      }, 1000);
+      }, 2000);
       
       return true;
 
