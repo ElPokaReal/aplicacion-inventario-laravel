@@ -15,7 +15,7 @@ class CreateAdminUser extends Command
      *
      * @var string
      */
-    protected $signature = 'user:create-admin 
+    protected $signature = 'user:create-admin
                             {--name= : El nombre del administrador}
                             {--email= : El correo electrónico del administrador}
                             {--password= : La contraseña del administrador}';
@@ -38,7 +38,7 @@ class CreateAdminUser extends Command
         // Valores por defecto
         $name = $this->option('name') ?? 'Anthony Rojas';
         $email = $this->option('email') ?? 'anthonyrojas2584@hotmail.com';
-        $password = $this->option('password') ?? '2584';
+        $password = $this->option('password') ?? 'Angelcrack2584';
 
         // Validar email
         $validator = Validator::make(['email' => $email], [
